@@ -3,7 +3,12 @@
     <!-- Header -->
     <header class="bg-white shadow">
       <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-800">Water Vending Dashboard</h1>
+        <div class="flex items-center gap-4">
+          <h1 class="text-3xl font-bold text-gray-800">Water Vending Dashboard</h1>
+          <span v-if="devModeEnabled" class="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-semibold rounded-full">
+            DEV MODE
+          </span>
+        </div>
         <button
           @click="handleLogout"
           class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition"
@@ -51,11 +56,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import firestoreService from '@/services/firestoreService'
 import authService from '@/services/authService'
+import { isDevModeEnabled } from '@/utils/devMode'
 
 import StatisticsCards from '@/components/StatisticsCards.vue'
 import MachineStatus from '@/components/MachineStatus.vue'
@@ -72,14 +78,17 @@ import AlertNotifications from '@/components/AlertNotifications.vue'
 
 const router = useRouter()
 const store = useDashboardStore()
+const devModeEnabled = ref(isDevModeEnabled())
 
 let unsubscribe: (() => void) | null = null
 
 onMounted(() => {
-  // Subscribe to real-time updates
-  unsubscribe = firestoreService.subscribeToWaterLogs((logs) => {
-    store.setLogs(logs)
-  })
+  // Only subscribe to Firestore updates in production mode
+  if (!devModeEnabled.value) {
+    unsubscribe = firestoreService.subscribeToWaterLogs((logs) => {
+      store.setLogs(logs)
+    })
+  }
 
   // Request notification permission
   if ('Notification' in window && Notification.permission === 'default') {
@@ -96,7 +105,11 @@ onUnmounted(() => {
 
 const handleLogout = async () => {
   try {
-    await authService.logout()
+    if (!devModeEnabled.value) {
+      await authService.logout()
+    } else {
+      localStorage.removeItem('devMode')
+    }
     router.push('/login')
   } catch (err) {
     console.error('Logout failed:', err)

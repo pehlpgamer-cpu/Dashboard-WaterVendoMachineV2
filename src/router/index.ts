@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw, NavigationGuardNext, Ro
 import Login from '@/views/Login.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import authService from '@/services/authService'
+import { isDevModeEnabled } from '@/utils/devMode'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -29,7 +30,8 @@ const router = createRouter({
 
 // Navigation guard: protect dashboard route
 router.beforeEach(async (to, from, next: NavigationGuardNext) => {
-  const user = await authService.getAuthState()
+  const devMode = isDevModeEnabled()
+  const user = devMode ? { uid: 'dev-user' } : await authService.getAuthState()
 
   if (to.meta.requiresAuth && !user) {
     next('/login')

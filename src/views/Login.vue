@@ -56,14 +56,31 @@
           <strong>Demo:</strong> You can sign up with any email/password combination for testing purposes.
         </p>
       </div>
+
+      <!-- Dev Mode Toggle -->
+      <div class="mt-6 pt-6 border-t border-gray-300">
+        <label class="flex items-center cursor-pointer">
+          <input
+            v-model="devMode"
+            type="checkbox"
+            @change="toggleDevMode"
+            class="w-4 h-4 text-blue-500"
+          />
+          <span class="ml-2 text-sm text-gray-700">Enable Dev Mode (Mock Data)</span>
+        </label>
+        <p v-if="devMode" class="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+          ✓ Dev mode active. Click "Sign In" to access dashboard with mock data.
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '@/services/authService'
+import { isDevModeEnabled, setDevMode } from '@/utils/devMode'
 
 const router = useRouter()
 const email = ref('')
@@ -71,11 +88,33 @@ const password = ref('')
 const loading = ref(false)
 const error = ref('')
 const isSignup = ref(false)
+const devMode = ref(isDevModeEnabled())
+
+onMounted(() => {
+  // Auto-login in devMode if already enabled
+  if (isDevModeEnabled()) {
+    devMode.value = true
+  }
+})
+
+const toggleDevMode = () => {
+  if (devMode.value) {
+    localStorage.setItem('devMode', 'true')
+  } else {
+    localStorage.removeItem('devMode')
+  }
+}
 
 const handleLogin = async () => {
   try {
     loading.value = true
     error.value = ''
+
+    if (devMode.value) {
+      // In dev mode, skip auth and go directly to dashboard
+      router.push('/dashboard')
+      return
+    }
 
     if (isSignup.value) {
       await authService.signup(email.value, password.value)

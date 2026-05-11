@@ -2,10 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { WaterLog } from '@/services/firestoreService'
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachHourOfInterval, getHours } from 'date-fns'
+import { isDevModeEnabled, generateMockWaterLogs } from '@/utils/devMode'
 
 export const useDashboardStore = defineStore('dashboard', () => {
   // State
-  const logs = ref<WaterLog[]>([])
+  const logs = ref<WaterLog[]>(isDevModeEnabled() ? generateMockWaterLogs(500) : [])
   const startDate = ref<Date>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) // Last 7 days
   const endDate = ref<Date>(new Date())
   const selectedWaterType = ref<'all' | 'cold' | 'regular'>('all')
