@@ -1,7 +1,10 @@
 
-- **web app dashboard:** https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2
+- **web app dashboard:** 
+  - [github repo](https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2)
+  - [url](https://pending.com)
 - **System manual:** pending...
-- **Documentation:** [github.com/pehlpgamer-cpu/FINAL-PROJECT-water-vendo-machine/tree/main](https://github.com/pehlpgamer-cpu/FINAL-PROJECT-water-vendo-machine/blob/main/AquaVend_Documentation.docx)
+- **Machine source code:** 
+- **Documentation:** 
 - **BSIT 2-F3 group members:**
   - Paulo E. Heymann
   - Chris Dale Noay
