@@ -16,9 +16,9 @@
         <label class="block text-sm font-medium mb-2">Time Period</label>
         <div class="flex gap-2">
           <button
-            v-for="period in ['today', 'week', 'month', 'all']"
+            v-for="period in timePeriods"
             :key="period"
-            @click="store.setTimeRange(period as any)"
+            @click="store.setTimeRange(period)"
             :class="[
               'px-3 py-1 text-sm rounded transition',
               store.selectedTimeRange === period
@@ -92,6 +92,7 @@ import { useDashboardStore } from '@/stores/dashboardStore'
 import { format } from 'date-fns'
 
 const store = useDashboardStore()
+const timePeriods: Array<'today' | 'week' | 'month' | 'all'> = ['today', 'week', 'month', 'all']
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 

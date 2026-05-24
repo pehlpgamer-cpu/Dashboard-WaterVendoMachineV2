@@ -64,7 +64,6 @@ All filters work together and charts update in real-time.
 #### 6️⃣ Data Export
 - **CSV Format** - Excel-compatible spreadsheet
 - **PDF Format** - Formatted report with styling
-- **Excel Format** - Native XLSX with formulas
 - **Filter-Aware** - Respects all current filters
 - **One-Click Download** - Instant file generation
 
@@ -123,7 +122,7 @@ All filters work together and charts update in real-time.
 ✅ src/services/firebaseConfig.ts  - Firebase initialization
 ✅ src/services/authService.ts     - Authentication logic
 ✅ src/services/firestoreService.ts - Database queries
-✅ src/services/exportService.ts   - CSV/PDF/Excel export
+✅ src/services/exportService.ts   - CSV/PDF export
 ✅ src/services/alertService.ts    - Alert management
 ```
 
@@ -235,21 +234,14 @@ npm run dev
 Dashboard opens at: `http://localhost:5173`
 
 ### 4. Test
-- Sign up with any email/password
+- Log in with a Firebase user created in the Firebase Console
 - Add sample data (see SETUP_INSTRUCTIONS.md)
 - View charts and statistics
 
 ### 5. Deploy
 ```bash
-# Option 1: Vercel
-vercel
-
-# Option 2: Netlify
 npm run build
-# Drag 'dist' to netlify.com
-
-# Option 3: Firebase
-firebase deploy
+# Upload dist contents to Hostinger public_html
 ```
 
 ---
@@ -265,7 +257,7 @@ firebase deploy
 | Backend | Firebase | ^10.11 |
 | Charts | Chart.js | ^4.4 |
 | Styling | Tailwind CSS | ^3.4 |
-| Export | jsPDF + XLSX | Latest |
+| Export | jsPDF | Latest |
 | Language | TypeScript | ^5.3 |
 | Dates | date-fns | ^2.30 |
 
@@ -305,8 +297,8 @@ The dashboard:
 **Firestore Collection Structure:**
 ```
 waterLogs/
-├── document_1: { amount: 5, isCold: true, timestamp: ... }
-├── document_2: { amount: 3, isCold: false, timestamp: ... }
+├── document_1: { amount: 5, isCold: true, timestamp: ..., timeSynced: true, clientUptimeMs: ... }
+├── document_2: { amount: 3, isCold: false, timestamp: ..., timeSynced: false, clientUptimeMs: ... }
 └── ...
 ```
 
@@ -347,7 +339,7 @@ The dashboard foundation is extensible for:
 | Readonly data | ✅ By design | Could add manual edits |
 | Local timezone | ✅ User's timezone | Could add timezone selector |
 | No authentication | ❌ Has Firebase Auth | ✅ Included! |
-| No exports | ❌ Has CSV/PDF/Excel | ✅ Included! |
+| No exports | ❌ Has CSV/PDF | ✅ Included! |
 
 ---
 
@@ -360,7 +352,7 @@ The dashboard foundation is extensible for:
 → Read **SETUP_INSTRUCTIONS.md** (step-by-step)
 
 ### Deployment
-→ Read **DEPLOYMENT.md** (Vercel, Netlify, Firebase)
+→ Read **DEPLOYMENT.md** (Hostinger public_html)
 
 ### Firebase/Firestore
 → Read **FIRESTORE_SETUP.md** (security, indexes, rules)
@@ -381,7 +373,7 @@ The dashboard foundation is extensible for:
 - ✅ All 6 statistics calculated
 - ✅ Firebase Auth implemented
 - ✅ Real-time Firestore sync
-- ✅ CSV/PDF/Excel export
+- ✅ CSV/PDF export
 - ✅ Alerts & notifications
 - ✅ Transaction history table
 - ✅ Machine status indicator

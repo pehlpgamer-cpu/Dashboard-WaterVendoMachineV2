@@ -9,6 +9,7 @@
 import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
+import type { ChartOptions } from 'chart.js'
 import { useDashboardStore } from '@/stores/dashboardStore'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
@@ -26,7 +27,7 @@ const chartData = computed(() => ({
   ]
 }))
 
-const chartOptions = {
+const chartOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: true,
   plugins: {

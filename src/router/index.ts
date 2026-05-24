@@ -1,8 +1,9 @@
-import { createRouter, createWebHistory, RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 import Login from '@/views/Login.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import authService from '@/services/authService'
-import { isDevModeEnabled } from '@/utils/devMode'
+import { isMockDataEnabled } from '@/utils/mockData'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -24,22 +25,22 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
-// Navigation guard: protect dashboard route
-router.beforeEach(async (to, from, next: NavigationGuardNext) => {
-  const devMode = isDevModeEnabled()
-  const user = devMode ? { uid: 'dev-user' } : await authService.getAuthState()
+router.beforeEach(async (to) => {
+  const user = isMockDataEnabled() ? { uid: 'mock-user' } : await authService.getAuthState()
 
   if (to.meta.requiresAuth && !user) {
-    next('/login')
-  } else if (to.path === '/login' && user) {
-    next('/dashboard')
-  } else {
-    next()
+    return '/login'
   }
+
+  if (to.path === '/login' && user) {
+    return '/dashboard'
+  }
+
+  return true
 })
 
 export default router

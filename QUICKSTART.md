@@ -37,7 +37,7 @@ Dashboard opens at: `http://localhost:5173`
 - Quick filters (Today/Week/Month)
 
 ### Exports
-- Download as CSV, PDF, or Excel
+- Download as CSV or PDF
 - All filters respected in exports
 
 ### Alerts
@@ -49,15 +49,18 @@ Dashboard opens at: `http://localhost:5173`
 
 ## 🔧 ESP32 Integration
 
-Your Arduino code already logs to Firestore:
+Firmware reads WiFi and Firebase values from local `secrets.h`:
 
 ```cpp
-// Set your Firebase credentials
-#define FIREBASE_API_KEY "YOUR_API_KEY"
+// Copy esp32-water-vendo-code/secrets.example.h to secrets.h first.
+#define WIFI_ENABLED true
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 #define FIREBASE_PROJECT_ID "pauloheymann-integ-prog"
+#define FIREBASE_API_KEY "YOUR_FIREBASE_WEB_API_KEY"
 ```
 
-Data automatically appears in dashboard!
+Sales use the ESP32 contract in `FIRESTORE_SETUP.md` and appear in the dashboard after Firestore accepts the create request.
 
 ---
 
@@ -85,37 +88,18 @@ dashboard/
 
 ## 🚀 Deployment
 
-### Vercel (Recommended - 2 min)
-```bash
-npm install -g vercel
-vercel
-```
-
-### Netlify (2 min)
+### Hostinger public_html
 ```bash
 npm run build
-# Drag 'dist' folder to netlify.com
 ```
 
-### Firebase Hosting (3 min)
-```bash
-npm install -g firebase-tools
-firebase init
-firebase deploy
-```
+Upload the contents of `dist` to Hostinger `public_html`. See `DEPLOYMENT.md`.
 
 ---
 
-## 🔑 Default Login
+## 🔑 Login
 
-To test the dashboard:
-
-1. Sign up with any email/password (first time)
-2. Use same credentials to log in
-
-Example:
-- Email: `test@example.com`
-- Password: `password123`
+Create users manually in Firebase Authentication. Public signup is disabled in production.
 
 ---
 
@@ -127,7 +111,9 @@ To test with sample data, add these documents to Firestore `waterLogs` collectio
 {
   "amount": 5,
   "isCold": true,
-  "timestamp": 1713607200000
+  "timestamp": 1713607200000,
+  "timeSynced": true,
+  "clientUptimeMs": 18400
 }
 ```
 
@@ -135,11 +121,13 @@ To test with sample data, add these documents to Firestore `waterLogs` collectio
 {
   "amount": 3,
   "isCold": false,
-  "timestamp": 1713607260000
+  "timestamp": 1713607260000,
+  "timeSynced": false,
+  "clientUptimeMs": 23800
 }
 ```
 
-Timestamp is milliseconds since epoch. Use `Date.now()` in browser console.
+Timestamp is milliseconds since epoch. Use `Date.now()` in browser console. `timeSynced: false` marks approximate flush-time rows from offline firmware queueing.
 
 ---
 

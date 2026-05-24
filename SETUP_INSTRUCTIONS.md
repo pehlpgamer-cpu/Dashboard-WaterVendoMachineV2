@@ -9,7 +9,7 @@ This guide will walk you through every step to get the dashboard running.
 ## Prerequisites
 
 Before starting, ensure you have:
-- **Node.js v18+** ([Download](https://nodejs.org))
+- **Node.js v20.19+ or v22.12+** ([Download](https://nodejs.org))
 - **npm or yarn** (comes with Node.js)
 - **Firebase Account** (free) - ([Sign up](https://firebase.google.com))
 - **GitHub Account** (optional, for deployment)
@@ -112,17 +112,7 @@ This installs all required packages (~100 packages, ~300MB).
    VITE_FIREBASE_APP_ID=YOUR_APP_ID
    ```
 
-3. Update `src/services/firebaseConfig.ts`:
-   ```typescript
-   const firebaseConfig = {
-     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-     appId: import.meta.env.VITE_FIREBASE_APP_ID
-   }
-   ```
+3. Do not edit `src/services/firebaseConfig.ts`; it reads these variables automatically.
 
 ---
 
@@ -152,13 +142,12 @@ The dashboard should open and redirect to `/login`
 
 ## Part 4: Test Authentication (3 minutes)
 
-### 4.1 Sign Up
+### 4.1 Create User
 
-1. On login page, click **"Sign Up"** toggle
-2. Enter email: `test@example.com`
-3. Enter password: `password123`
-4. Click **Sign In**
-5. You should be redirected to dashboard
+1. In Firebase Console, open Authentication -> Users.
+2. Add a dashboard user manually.
+3. Use that email/password on the login page.
+4. You should be redirected to dashboard.
 
 ### 4.2 Add Sample Data (to see charts)
 
@@ -170,10 +159,13 @@ The dashboard should open and redirect to `/login`
    const now = Date.now();
    
    for (let i = 1; i <= 20; i++) {
+     const isCold = Math.random() > 0.5;
      firestore.collection('waterLogs').add({
-       amount: Math.random() > 0.5 ? 5 : 3,
-       isCold: Math.random() > 0.5,
-       timestamp: now - (i * 3600000) // Each transaction 1 hour apart
+       amount: isCold ? 5 : 3,
+       isCold,
+       timestamp: now - (i * 3600000), // Each transaction 1 hour apart
+       timeSynced: true,
+       clientUptimeMs: i * 1000
      });
    }
    console.log('Sample data added!');
@@ -187,7 +179,7 @@ The dashboard should open and redirect to `/login`
 - ✅ View statistics cards updating
 - ✅ Interact with charts (click legend items)
 - ✅ Change filters (date range, water type, etc.)
-- ✅ Export as CSV/PDF/Excel
+- ✅ Export as CSV/PDF
 - ✅ View transaction history table
 - ✅ Check machine status (should show green "Online")
 
@@ -197,14 +189,17 @@ The dashboard should open and redirect to `/login`
 
 ### 5.1 Update ESP32 Code
 
-In your Arduino sketch, update Firebase configuration:
+Copy `esp32-water-vendo-code/secrets.example.h` to ignored local `esp32-water-vendo-code/secrets.h`, then set:
 
 ```cpp
-#define FIREBASE_API_KEY "YOUR_API_KEY"
+#define WIFI_ENABLED true
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 #define FIREBASE_PROJECT_ID "pauloheymann-integ-prog"
+#define FIREBASE_API_KEY "YOUR_FIREBASE_WEB_API_KEY"
 ```
 
-Use the same API key from step 1.2
+Use the same Firebase web API key from step 1.2.
 
 ### 5.2 Upload to ESP32
 
@@ -214,51 +209,17 @@ Use the same API key from step 1.2
 
 ---
 
-## Part 6: Deploy (Choose One)
+## Part 6: Deploy To Hostinger
 
-### Option A: Vercel (Recommended - 2 minutes)
-
-1. Install Vercel CLI:
-   ```bash
-   npm install -g vercel
-   ```
-
-2. Deploy:
-   ```bash
-   vercel
-   ```
-
-3. Follow prompts, choose "Next.js" if asked
-4. Your dashboard is live! Example: `your-project.vercel.app`
-
-### Option B: Netlify (2 minutes)
-
-1. Create production build:
+1. Create `.env.production.local` with real Firebase web app values.
+2. Build:
    ```bash
    npm run build
    ```
+3. Upload the contents of `dist` to Hostinger `public_html`.
+4. Confirm `index.html`, `assets/`, and `.htaccess` are directly inside `public_html`.
 
-2. Go to [netlify.com](https://netlify.com)
-3. Drag the `dist` folder to Netlify
-4. Your dashboard is live!
-
-### Option C: Firebase Hosting (3 minutes)
-
-1. Install Firebase CLI:
-   ```bash
-   npm install -g firebase-tools
-   ```
-
-2. Initialize:
-   ```bash
-   firebase init hosting
-   ```
-
-3. Deploy:
-   ```bash
-   npm run build
-   firebase deploy
-   ```
+See `DEPLOYMENT.md` for the full Hostinger checklist.
 
 ---
 
@@ -449,8 +410,7 @@ npm install                # Install dependencies
 npm install package-name   # Add new package
 
 # Deployment
-vercel                     # Deploy to Vercel
-firebase deploy            # Deploy to Firebase Hosting
+npm run build              # Build static files for Hostinger
 
 # Debugging
 npm run build              # Check for build errors

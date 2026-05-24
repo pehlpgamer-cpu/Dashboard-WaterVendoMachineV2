@@ -30,12 +30,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import alertService, { Alert } from '@/services/alertService'
 
 const store = useDashboardStore()
 const alerts = ref<Alert[]>([])
+let noActivityTimer: number | undefined
+
+const addAlert = (alert: Alert | null) => {
+  if (!alert || alerts.value.some(a => a.id === alert.id)) return
+
+  alerts.value.push(alert)
+  setTimeout(() => removeAlert(alert.id), 5000)
+}
 
 // Check for alerts whenever data changes
 watch(
@@ -43,28 +51,37 @@ watch(
   (newCount) => {
     const lowWaterAlert = alertService.checkLowWater(newCount)
     if (lowWaterAlert) {
-      alerts.value.push(lowWaterAlert)
+      addAlert(lowWaterAlert)
       alertService.triggerBrowserNotification('Low Water Alert', {
         body: `Machine is running low on water: ${newCount}/50 cups sold`,
         icon: '⚠️'
       })
-      setTimeout(() => removeAlert(lowWaterAlert.id), 5000)
     }
   }
 )
 
-watch(
-  () => store.lastTransaction,
-  (newTransaction) => {
-    if (newTransaction) {
-      const noActivityAlert = alertService.checkNoActivity(newTransaction.timestamp.getTime())
-      // Note: we only show this if specifically triggered, not on every transaction
-    }
+const checkNoActivity = () => {
+  const lastTransaction = store.lastTransaction
+  if (!lastTransaction) return
+
+  addAlert(alertService.checkNoActivity(lastTransaction.timestamp.getTime()))
+}
+
+watch(() => store.lastTransaction, checkNoActivity, { immediate: true })
+
+onMounted(() => {
+  noActivityTimer = window.setInterval(checkNoActivity, 60 * 1000)
+})
+
+onUnmounted(() => {
+  if (noActivityTimer) {
+    window.clearInterval(noActivityTimer)
   }
-)
+})
 
 const removeAlert = (id: string) => {
   alerts.value = alerts.value.filter(a => a.id !== id)
+  alertService.removeAlert(id)
 }
 </script>
 

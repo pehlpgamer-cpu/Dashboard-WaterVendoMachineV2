@@ -16,7 +16,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-green-100 mb-2">Total Revenue</p>
-          <h3 class="text-4xl font-bold">${{ store.totalRevenue }}</h3>
+          <h3 class="text-4xl font-bold">{{ formatPhilippinePeso(store.totalRevenue) }}</h3>
         </div>
         <span class="text-4xl opacity-20">💰</span>
       </div>
@@ -27,7 +27,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-purple-100 mb-2">Avg Price/Transaction</p>
-          <h3 class="text-4xl font-bold">${{ store.averagePrice }}</h3>
+          <h3 class="text-4xl font-bold">{{ formatPhilippinePeso(store.averagePrice) }}</h3>
         </div>
         <span class="text-4xl opacity-20">💵</span>
       </div>
@@ -61,11 +61,12 @@
         <div>
           <p class="text-pink-100 mb-2">Last Transaction</p>
           <p v-if="store.lastTransaction" class="text-lg font-semibold">
-            {{ store.lastTransaction.isCold ? 'Cold' : 'Regular' }} - ${{ store.lastTransaction.amount }}
+            {{ store.lastTransaction.isCold ? 'Cold' : 'Regular' }} - {{ formatPhilippinePeso(store.lastTransaction.amount) }}
           </p>
           <p v-else class="text-lg font-semibold">No transactions</p>
           <p v-if="store.lastTransaction" class="text-sm text-pink-100 mt-1">
             {{ formatTime(store.lastTransaction.timestamp) }}
+            <span v-if="store.lastTransaction.timeSynced === false" class="ml-1">Approx.</span>
           </p>
         </div>
         <span class="text-4xl opacity-20">⏰</span>
@@ -77,6 +78,7 @@
 <script setup lang="ts">
 import { useDashboardStore } from '@/stores/dashboardStore'
 import { formatDistanceToNow } from 'date-fns'
+import { formatPhilippinePeso } from '@/utils/currency'
 
 const store = useDashboardStore()
 

@@ -11,6 +11,9 @@ export class AlertService {
   // Check if low water alert should trigger (cups > 48)
   checkLowWater(cupsSold: number): Alert | null {
     if (cupsSold > 48) {
+      const existing = this.findAlertByPrefix('low-water-')
+      if (existing) return existing
+
       const alert: Alert = {
         id: 'low-water-' + Date.now(),
         type: 'warning',
@@ -31,6 +34,9 @@ export class AlertService {
     const timeSinceLastTransaction = Date.now() - lastTransactionTime
 
     if (timeSinceLastTransaction > fourHoursMs) {
+      const existing = this.findAlertByPrefix('no-activity-')
+      if (existing) return existing
+
       const alert: Alert = {
         id: 'no-activity-' + Date.now(),
         type: 'info',
@@ -56,6 +62,10 @@ export class AlertService {
   // Clear all alerts
   clearAll(): void {
     this.alerts.clear()
+  }
+
+  private findAlertByPrefix(prefix: string): Alert | null {
+    return Array.from(this.alerts.values()).find(alert => alert.id.startsWith(prefix)) || null
   }
 
   // Trigger browser notification

@@ -1,131 +1,86 @@
-# Firebase Deployment Configuration
+# Hostinger Deployment Guide
 
-## Prerequisites
-1. Install Firebase CLI: `npm install -g firebase-tools`
-2. Authenticate: `firebase login`
+This app is a static Vue/Vite dashboard. Hostinger does not need to run a Node.js server for production; upload the built files to `public_html`.
 
-## Deployment Steps
+## 1. Firebase Production Environment
 
-1. Build for production:
-   ```bash
-   npm run build
-   ```
-
-2. Initialize Firebase:
-   ```bash
-   firebase init
-   ```
-
-3. Deploy:
-   ```bash
-   firebase deploy
-   ```
-
-## Environment Variables
-
-Create a `.env.local` file in the root directory:
+Create `.env.production.local` in the project root. Do not commit this file.
 
 ```env
-# Firebase Config (from Firebase Console > Project Settings)
-VITE_FIREBASE_API_KEY=YOUR_API_KEY
+VITE_FIREBASE_API_KEY=your_real_web_api_key
 VITE_FIREBASE_AUTH_DOMAIN=pauloheymann-integ-prog.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=pauloheymann-integ-prog
 VITE_FIREBASE_STORAGE_BUCKET=pauloheymann-integ-prog.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
-VITE_FIREBASE_APP_ID=YOUR_APP_ID
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_real_sender_id
+VITE_FIREBASE_APP_ID=your_real_app_id
 ```
 
-## Update firebaseConfig.ts
+Get these values from Firebase Console -> Project Settings -> General -> Web app.
 
-Modify `src/services/firebaseConfig.ts` to use environment variables:
+## 2. Firebase Checklist
 
-```typescript
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+1. Enable Authentication -> Email/Password.
+2. Create production dashboard users manually in Firebase Authentication.
+3. Add your Hostinger domain to Authentication -> Settings -> Authorized domains.
+4. Publish the Firestore rules from `FIRESTORE_SETUP.md`.
+5. Confirm `waterLogs` documents use:
+
+```json
+{
+  "amount": 5,
+  "isCold": true,
+  "timestamp": 1713607200000,
+  "timeSynced": true,
+  "clientUptimeMs": 18400
 }
 ```
 
-## Vercel Deployment
+## 3. Build
 
-1. Connect your GitHub repo to Vercel
-2. Add environment variables in Vercel settings
-3. Deploy automatically on push to main branch
-
-## Firebase Firestore Security Rules
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow authenticated users to read water logs
-    match /waterLogs/{document=**} {
-      allow read: if request.auth != null;
-      allow create: if isValidTransaction(request.resource.data);
-      allow update, delete: if false; // Prevent modification of historical data
-    }
-    
-    // Helper function to validate transaction data
-    function isValidTransaction(data) {
-      return data.keys().hasAll(['amount', 'isCold', 'timestamp']) &&
-             data.amount in [3, 5] &&
-             data.isCold is bool &&
-             data.timestamp is number;
-    }
-  }
-}
+```bash
+npm ci
+npm run build
 ```
 
-## Firestore Indexes
+The build script runs:
 
-If you query by date range frequently, create a composite index:
+1. `vue-tsc --noEmit`
+2. Firebase env validation
+3. `vite build`
 
-1. Go to Firebase Console → Firestore → Indexes
-2. Create composite index:
-   - Collection: `waterLogs`
-   - Fields: `timestamp` (Descending), `isCold` (Ascending)
+If Firebase env values are blank or placeholder values, build stops before producing a deployable artifact.
 
-## ESP32 Integration
+## 4. Upload To Hostinger
 
-Update your ESP32 Arduino code to use your Firebase credentials:
+1. Open Hostinger hPanel -> Websites -> your domain -> File Manager.
+2. Open the domain `public_html` folder.
+3. Upload the **contents of `dist`**, not the `dist` folder itself.
+4. Ensure these exist directly inside `public_html`:
+   - `index.html`
+   - `assets/`
+   - `.htaccess`
+5. Visit your domain and hard-refresh.
+6. Open `/dashboard` directly to confirm the `.htaccess` SPA fallback works.
 
-```cpp
-#define FIREBASE_API_KEY "YOUR_API_KEY"
-#define FIREBASE_PROJECT_ID "pauloheymann-integ-prog"
+## 5. Verification
+
+Run before upload:
+
+```bash
+npm run check
+npm run build
+npm audit --omit=dev --audit-level=high
 ```
 
-The ESP32 will send data to the `waterLogs` collection automatically.
+After upload:
 
-## Monitoring & Analytics
+1. Log in with a pre-created Firebase user.
+2. Confirm an unknown user cannot register from the dashboard.
+3. Refresh `/dashboard` and confirm it still loads.
+4. Confirm charts, transaction table, CSV export, PDF export, alerts, and machine status work with Firestore data.
 
-1. **Firebase Console** - Real-time database stats
-2. **Google Analytics** - Dashboard traffic (if enabled)
-3. **Firestore Usage** - Monitor read/write counts
+## Notes
 
-## Cost Optimization
-
-- **Firestore Free Tier**: 50k reads/day, 20k writes/day
-- Limit real-time listeners where possible
-- Use pagination to avoid large data transfers
-- Archive old data periodically
-
-## Troubleshooting
-
-### Firebase not connecting?
-- Verify API key is correct (not redacted in console)
-- Check security rules (should allow reads for authenticated users)
-- Ensure Firestore is enabled
-
-### Build failing?
-- Run `npm install` to ensure all dependencies
-- Check Node.js version (v18+ recommended)
-- Clear `node_modules` and reinstall if needed
-
-### Slow performance?
-- Check Firestore indexes
-- Reduce number of simultaneous listeners
-- Implement pagination for large datasets
+- Public signup is intentionally disabled in the app. Add users in Firebase Console.
+- Mock data mode is development-only and is not available in production builds.
+- Spreadsheet export was removed because the previous browser spreadsheet dependency had unresolved high-severity advisories.

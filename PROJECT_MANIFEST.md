@@ -51,7 +51,6 @@ src/services/
 │   - Initializes Firebase app
 │
 ├── authService.ts                    # Authentication service
-│   - signup(email, password): User signup
 │   - login(email, password): User login
 │   - logout(): User logout
 │   - onAuthStateChanged(callback): Auth state listener
@@ -67,7 +66,6 @@ src/services/
 ├── exportService.ts                  # Data export functionality
 │   - exportToCSV(logs, filename): Download as CSV
 │   - exportToPDF(logs, filename): Download as PDF
-│   - exportToExcel(logs, filename): Download as XLSX
 │
 └── alertService.ts                   # Alert management
     - checkLowWater(cupsSold): Alert if > 48 cups
@@ -217,7 +215,6 @@ src/components/charts/
 ├── ExportPanel.vue                   # Export buttons
 │   - Download as CSV
 │   - Download as PDF
-│   - Download as Excel (XLSX)
 │   - Respects current filters
 │
 └── AlertNotifications.vue            # Toast notifications
@@ -301,25 +298,21 @@ App.vue
 - **Pinia** - State management store
 
 ### Build & Development
-- **Vite 5** - Lightning-fast build tool & dev server
+- **Vite 8** - Lightning-fast build tool & dev server
 - **TypeScript** - Type-safe JavaScript
 - **Tailwind CSS** - Utility-first styling framework
 
 ### Data & Charts
-- **Firebase 10** - Backend as a Service
+- **Firebase 12** - Backend as a Service
 - **Firestore** - Real-time cloud database
 - **Chart.js 4** - Interactive charts
 - **vue-chartjs 5** - Vue wrapper for Chart.js
 
 ### Data Export
-- **jsPDF 2.5** - PDF generation
-- **html2pdf** - HTML to PDF converter
-- **XLSX** - Excel file support
+- **jsPDF 4** - PDF generation
 
 ### Utilities  
 - **date-fns 2.30** - Date manipulation
-- **axios 1.6** - HTTP requests (optional)
-- **Vue Toast Notification** - Toast messages
 
 ---
 
@@ -349,7 +342,7 @@ App.vue
 ### Data Export
 **Files:** `ExportPanel.vue`, `exportService.ts`
 - Current filters applied to export
-- Multiple formats (CSV, PDF, Excel)
+- Multiple formats (CSV, PDF)
 - One-click download
 - Timestamp in filename
 
@@ -417,7 +410,7 @@ App.vue
 - [ ] Test authentication flow
 - [ ] Check responsive design on mobile
 - [ ] Run `npm run build` to check for errors
-- [ ] Deploy to Vercel/Netlify/Firebase Hosting
+- [ ] Build and upload `dist` contents to Hostinger `public_html`
 - [ ] Test in production environment
 
 ---

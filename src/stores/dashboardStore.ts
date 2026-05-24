@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { WaterLog } from '@/services/firestoreService'
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachHourOfInterval, getHours } from 'date-fns'
-import { isDevModeEnabled, generateMockWaterLogs } from '@/utils/devMode'
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, getHours } from 'date-fns'
+import { isMockDataEnabled, generateMockWaterLogs } from '@/utils/mockData'
 
 export const useDashboardStore = defineStore('dashboard', () => {
   // State
-  const logs = ref<WaterLog[]>(isDevModeEnabled() ? generateMockWaterLogs(500) : [])
+  const logs = ref<WaterLog[]>(isMockDataEnabled() ? generateMockWaterLogs(500) : [])
   const startDate = ref<Date>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) // Last 7 days
   const endDate = ref<Date>(new Date())
   const selectedWaterType = ref<'all' | 'cold' | 'regular'>('all')
@@ -70,17 +70,27 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (filteredLogs.value.length === 0) return 0
 
     const timeRangeMs = endDate.value.getTime() - startDate.value.getTime()
+    if (timeRangeMs <= 0) return 0
+
     const hours = timeRangeMs / (1000 * 60 * 60)
     return (filteredLogs.value.length / hours).toFixed(2)
   })
 
+  const latestLog = computed(() => {
+    if (logs.value.length === 0) return null
+    return logs.value.reduce((latest, log) => {
+      return log.timestamp > latest.timestamp ? log : latest
+    }, logs.value[0])
+  })
+
   const lastTransaction = computed(() => {
-    if (filteredLogs.value.length === 0) return null
-    const latest = filteredLogs.value[0]
+    if (!latestLog.value) return null
+
     return {
-      timestamp: new Date(latest.timestamp),
-      isCold: latest.isCold,
-      amount: latest.amount
+      timestamp: new Date(latestLog.value.timestamp),
+      isCold: latestLog.value.isCold,
+      amount: latestLog.value.amount,
+      timeSynced: latestLog.value.timeSynced
     }
   })
 
@@ -88,7 +98,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
   // Chart 1: Sales Over Time (hourly/daily)
   const salesOverTimeData = computed(() => {
-    const grouped: { [key: string]: number } = {}
+    const grouped: { [key: string]: { label: string; count: number } } = {}
 
     // Group by day if range > 30 days, else by hour
     const daysDiff = Math.ceil((endDate.value.getTime() - startDate.value.getTime()) / (1000 * 60 * 60 * 24))
@@ -96,17 +106,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     filteredLogs.value.forEach(log => {
       const date = new Date(log.timestamp)
-      const key = groupByDay
-        ? format(date, 'yyyy-MM-dd')
-        : format(date, 'HH:00')
+      const key = groupByDay ? format(date, 'yyyy-MM-dd') : format(date, 'yyyy-MM-dd HH')
+      const label = groupByDay ? format(date, 'yyyy-MM-dd') : format(date, 'MMM d HH:00')
 
-      grouped[key] = (grouped[key] || 0) + 1
+      grouped[key] = grouped[key] || { label, count: 0 }
+      grouped[key].count += 1
     })
 
     const labels = Object.keys(grouped).sort()
-    const data = labels.map(label => grouped[label])
+    const data = labels.map(label => grouped[label].count)
 
-    return { labels, data }
+    return { labels: labels.map(label => grouped[label].label), data }
   })
 
   // Chart 2: Cold vs Regular (Pie)
@@ -305,6 +315,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     coldVsRegularSplit,
     salesPerHour,
     lastTransaction,
+    latestLog,
 
     // Chart Data
     salesOverTimeData,

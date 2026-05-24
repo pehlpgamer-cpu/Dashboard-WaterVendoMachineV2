@@ -17,7 +17,16 @@
             <td colspan="4" class="py-4 px-4 text-center text-gray-500">No transactions found</td>
           </tr>
           <tr v-for="log in paginatedLogs" :key="log.id" class="border-b hover:bg-gray-50 transition">
-            <td class="py-3 px-4">{{ formatTime(log.timestamp) }}</td>
+            <td class="py-3 px-4">
+              {{ formatTime(log.timestamp) }}
+              <span
+                v-if="log.timeSynced === false"
+                class="ml-2 px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-800"
+                title="Offline sale uploaded after clock sync"
+              >
+                Approx.
+              </span>
+            </td>
             <td class="py-3 px-4">
               <span :class="[
                 'px-2 py-1 rounded text-xs font-medium',
@@ -26,7 +35,7 @@
                 {{ log.isCold ? 'Cold' : 'Regular' }}
               </span>
             </td>
-            <td class="py-3 px-4 font-semibold">${{ log.amount }}</td>
+            <td class="py-3 px-4 font-semibold">{{ formatPhilippinePeso(log.amount) }}</td>
             <td class="py-3 px-4">{{ formatDate(log.timestamp) }}</td>
           </tr>
         </tbody>
@@ -60,6 +69,7 @@
 import { ref, computed } from 'vue'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import { format } from 'date-fns'
+import { formatPhilippinePeso } from '@/utils/currency'
 
 const store = useDashboardStore()
 const currentPage = ref(1)

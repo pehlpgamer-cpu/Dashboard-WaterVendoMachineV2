@@ -15,12 +15,6 @@
         >
           📄 PDF
         </button>
-        <button
-          @click="exportExcel"
-          class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded transition"
-        >
-          📊 Excel
-        </button>
       </div>
     </div>
   </div>
@@ -39,17 +33,10 @@ const exportCSV = () => {
   )
 }
 
-const exportPDF = () => {
-  exportService.exportToPDF(
+const exportPDF = async () => {
+  await exportService.exportToPDF(
     store.filteredLogs,
     `water-sales-${new Date().toISOString().split('T')[0]}.pdf`
-  )
-}
-
-const exportExcel = async () => {
-  await exportService.exportToExcel(
-    store.filteredLogs,
-    `water-sales-${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 </script>

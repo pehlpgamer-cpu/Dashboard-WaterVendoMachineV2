@@ -5,8 +5,8 @@
       <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
         <div class="flex items-center gap-4">
           <h1 class="text-3xl font-bold text-gray-800">Water Vending Dashboard</h1>
-          <span v-if="devModeEnabled" class="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-semibold rounded-full">
-            DEV MODE
+          <span v-if="mockDataEnabled" class="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-semibold rounded-full">
+            MOCK DATA
           </span>
         </div>
         <button
@@ -61,7 +61,7 @@ import { useRouter } from 'vue-router'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import firestoreService from '@/services/firestoreService'
 import authService from '@/services/authService'
-import { isDevModeEnabled } from '@/utils/devMode'
+import { clearMockDataMode, isMockDataEnabled } from '@/utils/mockData'
 
 import StatisticsCards from '@/components/StatisticsCards.vue'
 import MachineStatus from '@/components/MachineStatus.vue'
@@ -78,13 +78,12 @@ import AlertNotifications from '@/components/AlertNotifications.vue'
 
 const router = useRouter()
 const store = useDashboardStore()
-const devModeEnabled = ref(isDevModeEnabled())
+const mockDataEnabled = ref(isMockDataEnabled())
 
 let unsubscribe: (() => void) | null = null
 
 onMounted(() => {
-  // Only subscribe to Firestore updates in production mode
-  if (!devModeEnabled.value) {
+  if (!mockDataEnabled.value) {
     unsubscribe = firestoreService.subscribeToWaterLogs((logs) => {
       store.setLogs(logs)
     })
@@ -105,10 +104,10 @@ onUnmounted(() => {
 
 const handleLogout = async () => {
   try {
-    if (!devModeEnabled.value) {
-      await authService.logout()
+    if (mockDataEnabled.value) {
+      clearMockDataMode()
     } else {
-      localStorage.removeItem('devMode')
+      await authService.logout()
     }
     router.push('/login')
   } catch (err) {

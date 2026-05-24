@@ -1,28 +1,39 @@
-// ============================================
-// REPLACE WITH YOUR FIREBASE CONFIG
-// Get these from Firebase Console > Project Settings
-// ============================================
-
-import { initializeApp } from 'firebase/app'
+import { FirebaseOptions, initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "pauloheymann-integ-prog.firebaseapp.com",
-  projectId: "pauloheymann-integ-prog",
-  storageBucket: "pauloheymann-integ-prog.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+const requiredFirebaseEnv = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID'
+] as const
+
+function getRequiredEnv(name: typeof requiredFirebaseEnv[number]): string {
+  const value = import.meta.env[name]
+
+  if (!value || value.startsWith('YOUR_')) {
+    throw new Error(`Missing required Firebase environment variable: ${name}`)
+  }
+
+  return value
 }
 
-// Initialize Firebase
+const firebaseConfig: FirebaseOptions = {
+  apiKey: getRequiredEnv('VITE_FIREBASE_API_KEY'),
+  authDomain: getRequiredEnv('VITE_FIREBASE_AUTH_DOMAIN'),
+  projectId: getRequiredEnv('VITE_FIREBASE_PROJECT_ID'),
+  storageBucket: getRequiredEnv('VITE_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: getRequiredEnv('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: getRequiredEnv('VITE_FIREBASE_APP_ID')
+}
+
 const app = initializeApp(firebaseConfig)
 
-// Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app)
 
-// Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app)
 
 export default app

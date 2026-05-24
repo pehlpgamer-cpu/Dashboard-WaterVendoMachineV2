@@ -16,3 +16,4 @@ pnpm-debug.log
 *.sw?
 .vscode/
 .firebase/
+esp32-water-vendo-code/secrets.h
