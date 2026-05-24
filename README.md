@@ -3,8 +3,9 @@
   - [github repo](https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2)
   - [url](https://pending.com)
 - **System manual:** pending...
-- **Machine source code:** 
-- **Documentation:** 
+- **Machine source code:** https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2/tree/main/esp32-water-vendo-code
+- **Documentation:** https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2/blob/main/docs/AquaVend_Documentation.docx
+- **Wiring diagram**: https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2/blob/main/docs/wiring_diagram.png
 - **BSIT 2-F3 group members:**
   - Paulo E. Heymann
   - Chris Dale Noay
