@@ -1,7 +1,7 @@
 
 - **web app dashboard:** 
   - [github repo](https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2)
-  - [url](https://pending.com)
+  - [url](https://watervendo.projectsmiledentalclinic.com)
 - **System manual:** pending...
 - **Machine source code:** https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2/tree/main/esp32-water-vendo-code
 - **Documentation:** https://github.com/pehlpgamer-cpu/Dashboard-WaterVendoMachineV2/blob/main/docs/AquaVend_Documentation.docx
